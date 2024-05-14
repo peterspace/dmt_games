@@ -51,13 +51,16 @@ app.get("/apple-app-site-association", (req, res) => {
   res.sendFile(__dirname + "/apple-app-site-association.json");
 });
 
+// const facebookLink = "https://dmt-games.onrender.com/?appId=appId&sub1={name}&sub2={bundleid}&sub3={fbclid}&sub4={pixel}&sub5=MCA&sub6=test&sub7=NPR&sub8={sub4}";
+
 //step3: on app launch
 // call this on initializing app to fetch back the original link that is needed for tracking user
 // because in the associated domain, we may not have th full path, but only the root domain https://dmtgames.com
 app.get("/game", (req, res) => {
   // const facebookLink =
   //   "https://dmtgames.com/?appId=appId&sub1={name}&sub2={bundleid}&sub3={fbclid}&sub4={pixel}&sub5=MCA&sub6=test&sub7=NPR&sub8={sub4}";
-  const facebookLink = `${backendURL}/?appId=appId&sub1={name}&sub2={bundleid}&sub3={fbclid}&sub4={pixel}&sub5=MCA&sub6=test&sub7=NPR&sub8={sub4}`;
+  // const facebookLink = `${backendURL}/?appId=appId&sub1={name}&sub2={bundleid}&sub3={fbclid}&sub4={pixel}&sub5=MCA&sub6=test&sub7=NPR&sub8={sub4}`;
+  const facebookLink = process.env.FACE_BOOK_LINK;
 
   const installed = "true";
   const newLink = facebookLink + `&installed=${installed}`;

@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
   const { installed } = req.query;
 
   // go to appstore to install app if not already installed
-  if (!installed) {
+  if (installed != "true") {
     // const appstorelink =
     //   "https://theangerofthegods.onelink.me/MnQE?af_xp=custom&pid=Facebook%20Media%20Source&deep_link_sub2={bundleid}&deep_link_sub3={fbclid}&deep_link_sub4={pixel}&deep_link_sub5=MCA&deep_link_sub6=test&deep_link_sub7=NPR&deep_link_sub8={sub4}";
     // const appStoreLink = "https://apps.apple.com/app/id1510445899";

@@ -3,7 +3,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 // const cors = require("cors");
 const { errorHandler } = require("./middleware/errorMiddleware.js");
-
 const app = express();
 const backendURL = process.env.BACKEND_URL;
 
@@ -22,15 +21,6 @@ app.set("trust proxy", 1);
 app.get("/", (req, res) => {
   const { installed } = req.query;
 
-  //======={GET USER IP ADDRESS}============================
-  const ip =
-    req.headers["cf-connecting-ip"] ||
-    req.headers["x-real-ip"] ||
-    req.headers["x-forwarded-for"] ||
-    req.socket.remoteAddress ||
-    "";
-  console.log({ ip });
-
   // go to appstore to install app if not already installed
   if (!installed) {
     // const appstorelink =
@@ -42,7 +32,8 @@ app.get("/", (req, res) => {
   }
 
   console.log("app redirect successful");
-  res.json({ ip });
+  // res.json({ ip });
+  res.json({ message: "app redirect successful" });
 });
 
 //set marketers link inside app

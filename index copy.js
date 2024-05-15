@@ -33,8 +33,7 @@ app.get("/", (req, res) => {
   }
 
   console.log("app redirect successful");
-  const facebookLink = process.env.FACEBOOK_FULL_LINK;
-  res.json(facebookLink);
+  // res.json({ ip });
   // res.json({ message: "app redirect successful" });
 });
 
@@ -64,8 +63,9 @@ app.get("/game", (req, res) => {
   // const facebookLink =
   //   "https://dmtgames.com/?appId=appId&sub1={name}&sub2={bundleid}&sub3={fbclid}&sub4={pixel}&sub5=MCA&sub6=test&sub7=NPR&sub8={sub4}";
   // const facebookLink = `${backendURL}/?appId=appId&sub1={name}&sub2={bundleid}&sub3={fbclid}&sub4={pixel}&sub5=MCA&sub6=test&sub7=NPR&sub8={sub4}`;
-  // const facebookLink = process.env.FACEBOOK_FULL_LINK;
-  const facebookLink = process.env.FACEBOOK_FULL_LINK;
+  // const facebookLink = process.env.FACE_BOOK_LINK;
+  const facebookLink = process.env.FACE_BOOK_LINK;
+
 
   const installed = "true";
   const newLink = facebookLink + `&installed=${installed}`;

@@ -39,6 +39,8 @@ app.get("/", (req, res) => {
 
 //set marketers link inside app
 
+// office
+
 //AASA file path/https://www.dmtgames.com/apple-app-site-association
 //associated domain: applinks:www.dmtgames.com
 

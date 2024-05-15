@@ -69,7 +69,8 @@ app.get("/game", (req, res) => {
   const newLink = facebookLink + `&installed=${installed}`;
 
   console.log(newLink);
-  res.redirect(newLink);
+  // res.redirect(newLink);
+  res.status(200).json(newLink);
 
   // res.json(newLink);
 });

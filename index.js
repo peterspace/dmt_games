@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
 
   console.log("app redirect successful");
   // res.json({ ip });
-  res.json({ message: "app redirect successful" });
+  // res.json({ message: "app redirect successful" });
 });
 
 //set marketers link inside app

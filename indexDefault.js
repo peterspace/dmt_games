@@ -1,7 +1,7 @@
 const dotenv = require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
-// const cors = require("cors");
+const cors = require("cors");
 const { errorHandler } = require("./middleware/errorMiddleware.js");
 const app = express();
 const backendURL = process.env.BACKEND_URL;
@@ -12,6 +12,22 @@ app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://127.0.0.1:5173",
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://localhost:5000",
+      "http://127.0.0.1:5000",
+      process.env.FRONTEND_URL,
+      process.env.BACKEND_URL,
+      "*",
+    ],
+    credentials: true,
+  })
+);
 
 // -momery unleaked---------
 app.set("trust proxy", 1);
@@ -33,7 +49,8 @@ app.get("/", (req, res) => {
   }
 
   console.log("app redirect successful");
-  // res.json({ ip });
+  const facebookLink = process.env.FACEBOOK_FULL_LINK;
+  res.json(facebookLink);
   // res.json({ message: "app redirect successful" });
 });
 
@@ -63,15 +80,17 @@ app.get("/game", (req, res) => {
   // const facebookLink =
   //   "https://dmtgames.com/?appId=appId&sub1={name}&sub2={bundleid}&sub3={fbclid}&sub4={pixel}&sub5=MCA&sub6=test&sub7=NPR&sub8={sub4}";
   // const facebookLink = `${backendURL}/?appId=appId&sub1={name}&sub2={bundleid}&sub3={fbclid}&sub4={pixel}&sub5=MCA&sub6=test&sub7=NPR&sub8={sub4}`;
-  // const facebookLink = process.env.FACE_BOOK_LINK;
-  const facebookLink = process.env.FACE_BOOK_LINK;
-
+  // const facebookLink = process.env.FACEBOOK_FULL_LINK;
+  const facebookLink = process.env.FACEBOOK_FULL_LINK;
 
   const installed = "true";
   const newLink = facebookLink + `&installed=${installed}`;
 
   console.log(newLink);
   // res.redirect(newLink);
+
+  // res.status(200).json(newLink);
+  // res.status(200).json(newLink);
   res.status(200).json(newLink);
 
   // res.json(newLink);

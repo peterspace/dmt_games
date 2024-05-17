@@ -89,6 +89,31 @@ app.get("/installed", (req, res) => {
   // res.json(newLink);
 });
 
+app.get("/track_app_installs", async (req, res) => {
+  const { advertiser_tracking_id } = req.params;
+
+  const app_id = process.env.FACEBOOK_APP_ID;
+  const app_access_token = process.env.FACEBOOK_ACCESS_TOKEN;
+  // const advertiser_tracking_id = ""
+  try {
+    const response = await axios.post(
+      `https://graph.facebook.com/${app_id}/activities?event=MOBILE_APP_INSTALL&application_tracking_enabled=1&advertiser_tracking_enabled=1&advertiser_id=${advertiser_tracking_id}&${app_access_token}`
+    );
+
+    if (response.data) {
+      let result = response.data;
+      console.log({ result });
+      // "success": true
+      // res.json(result);
+    }
+  } catch (error) {
+    const err = error.response.data;
+    console.log(err);
+    // return { status: err.success, message: err.message };
+    // res.json(err);
+  }
+});
+
 // Error Middleware
 app.use(errorHandler);
 // Connect to DB and start server

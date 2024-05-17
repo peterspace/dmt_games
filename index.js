@@ -91,27 +91,32 @@ app.get("/installed", (req, res) => {
 
 app.get("/track_app_installs", async (req, res) => {
   const { advertiser_tracking_id } = req.params;
+  console.log("checking installs");
 
   const app_id = process.env.FACEBOOK_APP_ID;
   const app_access_token = process.env.FACEBOOK_ACCESS_TOKEN;
-  // const advertiser_tracking_id = ""
-  try {
-    const response = await axios.post(
-      `https://graph.facebook.com/${app_id}/activities?event=MOBILE_APP_INSTALL&application_tracking_enabled=1&advertiser_tracking_enabled=1&advertiser_id=${advertiser_tracking_id}&${app_access_token}`
-    );
 
-    if (response.data) {
-      let result = response.data;
-      console.log({ result });
-      // "success": true
-      // res.json(result);
+  if (advertiser_tracking_id) {
+    console.log({ advertiser_tracking_id });
+    try {
+      const response = await axios.post(
+        `https://graph.facebook.com/${app_id}/activities?event=MOBILE_APP_INSTALL&application_tracking_enabled=1&advertiser_tracking_enabled=1&advertiser_id=${advertiser_tracking_id}&${app_access_token}`
+      );
+
+      if (response.data) {
+        let result = response.data;
+        console.log({ result });
+        // "success": true
+        // res.json(result);
+      }
+    } catch (error) {
+      // const err = error.response.data;
+      console.log(error);
+      // return { status: err.success, message: err.message };
+      // res.json(err);
     }
-  } catch (error) {
-    const err = error.response.data;
-    console.log(err);
-    // return { status: err.success, message: err.message };
-    // res.json(err);
   }
+  // const advertiser_tracking_id = ""
 });
 
 // Error Middleware

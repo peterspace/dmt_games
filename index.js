@@ -55,12 +55,11 @@ app.get("/", (req, res) => {
 
 // office
 
-//AASA file path//https://www.dmtgames.pro/apple-app-site-association
+//AASA file path//https://www.dmtgames.pro/.well-known/apple-app-site-association
 //associated domain: applinks:www.dmtgames.pro
-
 //Step2: automtically by apple
 // automatic download link for AASA file done by apple from the associated domain list created in xcode only after the app has been installed on the device
-app.get("/apple-app-site-association", (req, res) => {
+app.get("/.well-known/apple-app-site-association", (req, res) => {
   // Serve the AASA file
   // default part if no query params
   // Set the appropriate Content-Type header
@@ -118,8 +117,6 @@ app.get("/track_app_installs", async (req, res) => {
   }
   // const advertiser_tracking_id = ""
 });
-
-
 
 // Error Middleware
 app.use(errorHandler);

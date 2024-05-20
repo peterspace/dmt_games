@@ -90,7 +90,7 @@ app.get("/installed", (req, res) => {
 });
 
 app.get("/track_app_installs", async (req, res) => {
-  const { advertiser_tracking_id } = req.params;
+  const { advertiser_tracking_id } = req.query;
   console.log("checking installs");
 
   const app_id = process.env.FACEBOOK_APP_ID;
@@ -119,6 +119,8 @@ app.get("/track_app_installs", async (req, res) => {
   // const advertiser_tracking_id = ""
 });
 
+
+
 // Error Middleware
 app.use(errorHandler);
 // Connect to DB and start server
@@ -127,3 +129,5 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`Server Running on port ${PORT}`);
 });
+
+//http://localhost:4000/track_app_installs_test?advertiser_tracking_id=1

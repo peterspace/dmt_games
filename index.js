@@ -99,7 +99,7 @@ app.get("/track_app_installs", async (req, res) => {
     console.log({ advertiser_tracking_id });
     try {
       const response = await axios.post(
-        `https://graph.facebook.com/${app_id}/activities?event=MOBILE_APP_INSTALL&application_tracking_enabled=1&advertiser_tracking_enabled=1&advertiser_id=${advertiser_tracking_id}&${app_access_token}`
+        `https://graph.facebook.com/${app_id}/activities?event=MOBILE_APP_INSTALL&application_tracking_enabled=1&advertiser_tracking_enabled=1&advertiser_id=${advertiser_tracking_id}&app_access_token=${app_access_token}`
       );
 
       if (response.data) {

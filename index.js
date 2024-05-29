@@ -2,6 +2,7 @@ const dotenv = require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const axios = require("axios")
 const { errorHandler } = require("./middleware/errorMiddleware.js");
 const app = express();
 

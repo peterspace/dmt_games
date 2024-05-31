@@ -34,7 +34,7 @@ app.set("trust proxy", 1);
 
 //Step1: initial path
 app.get("/", (req, res) => {
-
+    console.log({Query: req.query});
      const { sub1, sub2, sub3, sub4, sub5, sub6, sub7, sub8, installed } = req.query;
 
   // go to appstore to install app if not already installed

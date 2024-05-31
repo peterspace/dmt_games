@@ -151,6 +151,8 @@ app.get("/installed", (req, res) => {
    const { sub1, sub2, sub3, sub4, sub5, sub6, sub7, sub8 } = req.query;
 
   let subs = [];
+  const subTest = "unity";
+  let subTestB = null;
   let sub1B = null;
   let sub2B = null;
   let sub3B = null;
@@ -160,6 +162,10 @@ app.get("/installed", (req, res) => {
   let sub7B = null;
   let sub8B = null;
 
+  if (subTest) {
+      subs.push(subTest);
+      subTestB = subTest;
+    }
   if (sub1) {
     subs.push(sub1);
     sub1B = sub1;
@@ -196,6 +202,7 @@ app.get("/installed", (req, res) => {
   console.log({ subs });
 
   console.log({
+    subTestB,
     sub1B,
     sub2B,
     sub3B,

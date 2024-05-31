@@ -34,7 +34,8 @@ app.set("trust proxy", 1);
 
 //Step1: initial path
 app.get("/", (req, res) => {
-  const { installed } = req.query;
+
+     const { sub1, sub2, sub3, sub4, sub5, sub6, sub7, sub8, installed } = req.query;
 
   // go to appstore to install app if not already installed
   if (installed != "true") {
@@ -45,7 +46,11 @@ app.get("/", (req, res) => {
 
   console.log("app redirect successful");
 
-  const facebookLink = process.env.FACEBOOK_FULL_LINK;
+  const updatedLink =  `https://www.dmtgames.pro/?sub1=${sub1}&sub2=${sub2}&sub3=${sub3}&sub4=${sub4}&sub5=${sub5}&sub6=${sub6}&sub7=${sub7}&sub8=${sub8}`
+  // const facebookLink = process.env.FACEBOOK_FULL_LINK;
+  const facebookLink = updatedLink;
+
+ // const facebookLink = process.env.FACEBOOK_FULL_LINK;
 
   const newLink = facebookLink + `&installed=${installed}`;
 

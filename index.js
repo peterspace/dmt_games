@@ -149,6 +149,7 @@ app.get("/game", (req, res) => {
 app.get("/installed", (req, res) => {
 
   console.log({Query: req.query});
+   console.log({Params: req.params});
 
    const { sub1, sub2, sub3, sub4, sub5, sub6, sub7, sub8 } = req.query;
 

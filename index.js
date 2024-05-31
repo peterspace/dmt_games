@@ -236,6 +236,13 @@ app.get("/track_app_installs", async (req, res) => {
   const { advertiser_tracking_id } = req.query;
   console.log("checking installs");
 
+      //====={New update}========================
+  // const userExists = User.findOne({userId:advertiser_tracking_id})
+  // let facebookLink = ""
+
+  // use advertiser_tracking_id as userId
+  // chec
+
   const app_id = process.env.FACEBOOK_APP_ID;
   const app_access_token = process.env.FACEBOOK_ACCESS_TOKEN;
 
@@ -246,12 +253,29 @@ app.get("/track_app_installs", async (req, res) => {
         `https://graph.facebook.com/${app_id}/activities?event=MOBILE_APP_INSTALL&event_name=MOBILE_APP_INSTALL&application_tracking_enabled=1&advertiser_tracking_enabled=1&advertiser_id=${advertiser_tracking_id}&access_token=${app_access_token}`
       );
 
-      if (response.data) {
+
+       if (response.data) {
         let result = response.data;
+        
         console.log({ result });
-        // "success": true
-        // res.json(result);
+
+      
       }
+      //====={New update}========================
+
+        //   if (response.data && userExists) {
+    //     let result = response.data;
+    //  facebookLink = userExists.faceBookLink
+    //          const installed = "true";
+    // const newLink = facebookLink + `&installed=${installed}`;
+    // console.log({redirectLink: newLink});
+        
+    //     console.log({ result });
+    //     // "success": true
+    //     res.json(newLink);
+
+      
+    //   }
     } catch (error) {
       // const err = error.response.data;
       console.log(error);

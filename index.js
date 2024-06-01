@@ -167,7 +167,8 @@ app.get("/installed", async (req, res) => {
     newLink = backend; // take back to home link for redirect to app store
   }
   console.log({ redirectLink: newLink });
-  res.redirect(newLink);
+  // res.redirect(newLink);
+  res.json(newLink);
 });
 
 app.get("/track_app_installs", async (req, res) => {

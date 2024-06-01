@@ -1,11 +1,12 @@
 const dotenv = require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const axios = require("axios");
 const { errorHandler } = require("./middleware/errorMiddleware.js");
+const User = require("./models/User.js");
 const app = express();
-
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -32,28 +33,82 @@ app.use(
 // -momery unleaked---------
 app.set("trust proxy", 1);
 
+const backend = process.env.BACKEND_URL;
+const app_id = process.env.FACEBOOK_APP_ID;
+const app_access_token = process.env.FACEBOOK_ACCESS_TOKEN;
+
 //Step1: initial path
-app.get("/", (req, res) => {
-    console.log({Query: req.query});
-     const { sub1, sub2, sub3, sub4, sub5, sub6, sub7, sub8, installed } = req.query;
 
-  // go to appstore to install app if not already installed
-  if (installed != "true") {
+app.get("/", async (req, res) => {
+  const ip =
+    req.headers["cf-connecting-ip"] ||
+    req.headers["x-real-ip"] ||
+    req.headers["x-forwarded-for"] ||
+    req.socket.remoteAddress ||
+    "";
+  console.log({ userIPAddress: ip });
+  console.log({ Query: req.query });
+  const {
+    sub1,
+    sub2,
+    sub3,
+    sub4,
+    sub5,
+    sub6,
+    sub7,
+    sub8,
+    installed,
+    advertiser_tracking_id,
+  } = req.query;
+
+  // Check if user email already exists
+  const userExists = await User.findOne({ ipAddress: ip });
+  const userTrackingIdExists = await User.findOne({
+    advertiserTrackingId: advertiser_tracking_id,
+  });
+
+  let facebookLink = "";
+
+  // Redirect to app store if not installed
+  if (installed !== "true") {
     const appStoreLink = process.env.APP_STORE_LINK;
-
-    res.redirect(appStoreLink);
+    return res.redirect(appStoreLink);
   }
 
   console.log("app redirect successful");
 
-  const updatedLink =  `https://www.dmtgames.pro/?sub1=${sub1}&sub2=${sub2}&sub3=${sub3}&sub4=${sub4}&sub5=${sub5}&sub6=${sub6}&sub7=${sub7}&sub8=${sub8}`
-  // const facebookLink = process.env.FACEBOOK_FULL_LINK;
-  const facebookLink = updatedLink;
+  let newLink = "";
 
- // const facebookLink = process.env.FACEBOOK_FULL_LINK;
+  if (userTrackingIdExists) {
+    console.log("user exists");
+    facebookLink = userTrackingIdExists.userLink;
+  } else if (userExists) {
+    console.log("user exists");
+    facebookLink = userExists.userLink;
+  } else {
+    console.log("new user");
 
-  const newLink = facebookLink + `&installed=${installed}`;
+    // New user
+    const updatedLink = `${backend}/?sub1=${sub1}&sub2=${sub2}&sub3=${sub3}&sub4=${sub4}&sub5=${sub5}&sub6=${sub6}&sub7=${sub7}&sub8=${sub8}`;
 
+    const newUser = await User.create({
+      ipAddress: ip,
+      userLink: updatedLink,
+    });
+
+    if (newUser) {
+      facebookLink = updatedLink;
+      console.log({ "New user created": newUser });
+    }
+  }
+
+  if (installed) {
+    newLink = facebookLink + `&installed=${installed}`;
+  } else {
+    newLink = facebookLink;
+  }
+
+  console.log({ redirectLink: newLink });
   res.json(newLink);
 });
 
@@ -77,174 +132,73 @@ app.get("/.well-known/apple-app-site-association", (req, res) => {
 // call this on initializing app to fetch back the original link that is needed for tracking user
 // because in the associated domain, we may not have th full path, but only the root domain https://www.dmtgames.pro
 
-// app.get("/game", (req, res) => {
-//   const facebookLink = process.env.FACEBOOK_FULL_LINK;
-//   const installed = "true";
-//   const newLink = facebookLink + `&installed=${installed}`;
-//   console.log(newLink);
-//   res.json(newLink);
-// });
+// add advertiser_tracking_id to installed API call in unity app
+app.get("/installed", async (req, res) => {
+  const ip =
+    req.headers["cf-connecting-ip"] ||
+    req.headers["x-real-ip"] ||
+    req.headers["x-forwarded-for"] ||
+    req.socket.remoteAddress ||
+    "";
+  const { advertiser_tracking_id } = req.query;
 
-app.get("/game", (req, res) => {
-  const { sub1, sub2, sub3, sub4, sub5, sub6, sub7, sub8 } = req.query;
-
-  let subs = [];
-  let sub1B = null;
-  let sub2B = null;
-  let sub3B = null;
-  let sub4B = null;
-  let sub5B = null;
-  let sub6B = null;
-  let sub7B = null;
-  let sub8B = null;
-
-  if (sub1) {
-    subs.push(sub1);
-    sub1B = sub1;
-  }
-  if (sub2) {
-    subs.push(sub2);
-    sub2B = sub2;
-  }
-  if (sub3) {
-    subs.push(sub3);
-    sub3B = sub3;
-  }
-  if (sub4) {
-    subs.push(sub4);
-    sub4B = sub4;
-  }
-  if (sub5) {
-    subs.push(sub5);
-    sub5B = sub5;
-  }
-  if (sub6) {
-    subs.push(sub6);
-    sub6B = sub6;
-  }
-  if (sub7) {
-    subs.push(sub7);
-    sub7B = sub7;
-  }
-  if (sub8) {
-    subs.push(sub8);
-    sub8B = sub8;
-  }
-
-  console.log({ subs });
-
-  console.log({
-    sub1B,
-    sub2B,
-    sub3B,
-    sub4B,
-    sub5B,
-    sub6B,
-    sub7B,
-    sub8B,
-  });
-  const facebookLink = process.env.FACEBOOK_FULL_LINK;
-  const installed = "true";
-  const newLink = facebookLink + `&installed=${installed}`;
-  console.log(newLink);
-  res.json(newLink);
-});
-
-
-app.get("/installed", (req, res) => {
-
-  console.log({Query: req.query});
-   console.log({Params: req.params});
-
-   const { sub1, sub2, sub3, sub4, sub5, sub6, sub7, sub8 } = req.query;
-
-  let subs = [];
-  const subTest = "unity";
-  let subTestB = null;
-  let sub1B = null;
-  let sub2B = null;
-  let sub3B = null;
-  let sub4B = null;
-  let sub5B = null;
-  let sub6B = null;
-  let sub7B = null;
-  let sub8B = null;
-
-  if (subTest) {
-      subs.push(subTest);
-      subTestB = subTest;
-    }
-  if (sub1) {
-    subs.push(sub1);
-    sub1B = sub1;
-  }
-  if (sub2) {
-    subs.push(sub2);
-    sub2B = sub2;
-  }
-  if (sub3) {
-    subs.push(sub3);
-    sub3B = sub3;
-  }
-  if (sub4) {
-    subs.push(sub4);
-    sub4B = sub4;
-  }
-  if (sub5) {
-    subs.push(sub5);
-    sub5B = sub5;
-  }
-  if (sub6) {
-    subs.push(sub6);
-    sub6B = sub6;
-  }
-  if (sub7) {
-    subs.push(sub7);
-    sub7B = sub7;
-  }
-  if (sub8) {
-    subs.push(sub8);
-    sub8B = sub8;
-  }
-
-  console.log({ subs });
-
-  console.log({
-    subTestB,
-    sub1B,
-    sub2B,
-    sub3B,
-    sub4B,
-    sub5B,
-    sub6B,
-    sub7B,
-    sub8B,
+  const userExists = await User.findOne({ ipAddress: ip });
+  const userTrackingIdExists = await User.findOne({
+    advertiserTrackingId: advertiser_tracking_id,
   });
 
- const updatedLink =  `https://www.dmtgames.pro/?sub1=${sub1}&sub2=${sub2}&sub3=${sub3}&sub4=${sub4}&sub5=${sub5}&sub6=${sub6}&sub7=${sub7}&sub8=${sub8}`
-  // const facebookLink = process.env.FACEBOOK_FULL_LINK;
-  const facebookLink = updatedLink;
-  
-  const installed = "true";
-  const newLink = facebookLink + `&installed=${installed}`;
-  console.log({redirectLink: newLink});
+  let newLink = "";
+
+  // if only advertiser tracking id exists
+  if (userTrackingIdExists) {
+    console.log("only advertiser tracking id exists");
+    const facebookLink = userTrackingIdExists.userLink;
+    const installed = "true";
+    newLink = facebookLink + `&installed=${installed}`;
+  } else if (userExists) {
+    console.log("only ip exists");
+    const facebookLink = userExists.userLink;
+    const installed = "true";
+    newLink = facebookLink + `&installed=${installed}`;
+  } else {
+    console.log("user does not exist");
+    newLink = backend; // take back to home link for redirect to app store
+  }
+  console.log({ redirectLink: newLink });
   res.redirect(newLink);
-  // res.json(newLink);
 });
 
 app.get("/track_app_installs", async (req, res) => {
+  const ip =
+    req.headers["cf-connecting-ip"] ||
+    req.headers["x-real-ip"] ||
+    req.headers["x-forwarded-for"] ||
+    req.socket.remoteAddress ||
+    "";
   const { advertiser_tracking_id } = req.query;
+
+  if (advertiser_tracking_id) {
+    console.log({ advertiser_tracking_id });
+  }
   console.log("checking installs");
 
-      //====={New update}========================
-  // const userExists = User.findOne({userId:advertiser_tracking_id})
-  // let facebookLink = ""
+  const userExists = await User.findOne({ ipAddress: ip });
 
-  // use advertiser_tracking_id as userId
-  // chec
+  if (userExists) {
+    console.log({ userExists });
+  }
 
-  const app_id = process.env.FACEBOOK_APP_ID;
-  const app_access_token = process.env.FACEBOOK_ACCESS_TOKEN;
+  //save advertiser_tracking_id to user database on first app launch
+  if (userExists && !userExists.advertiserTrackingId) {
+    userExists.advertiserTrackingId =
+      advertiser_tracking_id || userExists.advertiserTrackingId;
+
+    const updatedUser = await userExists.save();
+
+    if (updatedUser) {
+      console.log({ "User updated": updatedUser });
+    }
+  }
 
   if (advertiser_tracking_id) {
     console.log({ advertiser_tracking_id });
@@ -253,29 +207,13 @@ app.get("/track_app_installs", async (req, res) => {
         `https://graph.facebook.com/${app_id}/activities?event=MOBILE_APP_INSTALL&event_name=MOBILE_APP_INSTALL&application_tracking_enabled=1&advertiser_tracking_enabled=1&advertiser_id=${advertiser_tracking_id}&access_token=${app_access_token}`
       );
 
-
-       if (response.data) {
+      if (response.data) {
         let result = response.data;
-        
-        console.log({ result });
 
-      
+        console.log({ result });
+        //{ result: { success: true } }
       }
       //====={New update}========================
-
-        //   if (response.data && userExists) {
-    //     let result = response.data;
-    //  facebookLink = userExists.faceBookLink
-    //          const installed = "true";
-    // const newLink = facebookLink + `&installed=${installed}`;
-    // console.log({redirectLink: newLink});
-        
-    //     console.log({ result });
-    //     // "success": true
-    //     res.json(newLink);
-
-      
-    //   }
     } catch (error) {
       // const err = error.response.data;
       console.log(error);
@@ -283,7 +221,16 @@ app.get("/track_app_installs", async (req, res) => {
       // res.json(err);
     }
   }
-  // const advertiser_tracking_id = ""
+});
+
+// fetch all users
+app.get("/all_users", async (req, res) => {
+  const allUsers = await User.find();
+
+  if (allUsers) {
+    console.log({ allUsers });
+    res.status(200).json(allUsers);
+  }
 });
 
 // Error Middleware
@@ -295,4 +242,9 @@ const server = app.listen(PORT, () => {
   console.log(`Server Running on port ${PORT}`);
 });
 
-//http://localhost:4000/track_app_installs_test?advertiser_tracking_id=1
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => {
+    server;
+  })
+  .catch((err) => console.log(err));

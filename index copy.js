@@ -66,12 +66,26 @@ app.get("/", async (req, res) => {
   const userTrackingIdExists = await User.findOne({
     advertiserTrackingId: advertiser_tracking_id,
   });
+
   let facebookLink = "";
+
+  // Redirect to app store if not installed
+  if (installed !== "true") {
+    const appStoreLink = process.env.APP_STORE_LINK;
+    return res.redirect(appStoreLink);
+  }
+
+  console.log("app redirect successful");
+
   let newLink = "";
 
-  if (!userExists && sub1) {
-    // sub1 must be constant
-
+  if (userTrackingIdExists) {
+    console.log("user exists");
+    facebookLink = userTrackingIdExists.userLink;
+  } else if (userExists) {
+    console.log("user exists");
+    facebookLink = userExists.userLink;
+  } else {
     console.log("new user");
 
     // New user
@@ -85,24 +99,8 @@ app.get("/", async (req, res) => {
     if (newUser) {
       facebookLink = updatedLink;
       console.log({ "New user created": newUser });
-      const appStoreLink = process.env.APP_STORE_LINK;
-      return res.redirect(appStoreLink);
     }
-  } else if (userTrackingIdExists) {
-    console.log("user exists");
-    facebookLink = userTrackingIdExists.userLink;
-  } else {
-    console.log("user exists");
-    facebookLink = userExists.userLink;
   }
-
-  // Redirect to app store if not installed
-  // if (installed !== "true") {
-  //   const appStoreLink = process.env.APP_STORE_LINK;
-  //   return res.redirect(appStoreLink);
-  // }
-
-  console.log("app redirect successful");
 
   if (installed) {
     newLink = facebookLink + `&installed=${installed}`;

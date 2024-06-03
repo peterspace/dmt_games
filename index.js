@@ -39,43 +39,44 @@ const app_access_token = process.env.FACEBOOK_ACCESS_TOKEN;
 
 //Step1: initial path
 
+// const link1 =
+//   "https://www.dmtgames.pro/?sub1=NPR&sub2=291735090&fbp=714981180129689&token=EAAEcIRgo4MIBO7Gb3oGV6rbcjXOiZBhplvcAeWAXc6Xfn0xZAv02XEts1RyAcV7zEbY6mbYBqPgjUKY6PWhRrRf0YWHkzBToto5Q6rSJ4RqDWg8u84mKzhC28AeZBv1EXYGfCj1NZBTNPTH7ejqdUtCZA7ZCIgvZAZBuGqEpySTJOCgz6aIQawJfcsQBRGiuTiPh7AZDZD";
+// const link2 =
+//   "https://www.dmtgames.pro/?sub1=NPR&fbp=714981180129689&token=EAAEcIRgo4MIBO7Gb3oGV6rbcjXOiZBhplvcAeWAXc6Xfn0xZAv02XEts1RyAcV7zEbY6mbYBqPgjUKY6PWhRrRf0YWHkzBToto5Q6rSJ4RqDWg8u84mKzhC28AeZBv1EXYGfCj1NZBTNPTH7ejqdUtCZA7ZCIgvZAZBuGqEpySTJOCgz6aIQawJfcsQBRGiuTiPh7AZDZD";
+// const link3 =
+//   "https://www.dmtgames.pro/?sub1=NPR&sub2=291735090&sub3=NPR&sub4=vidos1&sub5={{ad.id}}&sub6=method1&fbp=714981180129689&token=EAAEcIRgo4MIBO7Gb3oGV6rbcjXOiZBhplvcAeWAXc6Xfn0xZAv02XEts1RyAcV7zEbY6mbYBqPgjUKY6PWhRrRf0YWHkzBToto5Q6rSJ4RqDWg8u84mKzhC28AeZBv1EXYGfCj1NZBTNPTH7ejqdUtCZA7ZCIgvZAZBuGqEpySTJOCgz6aIQawJfcsQBRGiuTiPh7AZDZD";
+
 app.get("/", async (req, res) => {
+  //======{request objects}====================================
   const ip =
     req.headers["cf-connecting-ip"] ||
     req.headers["x-real-ip"] ||
     req.headers["x-forwarded-for"] ||
     req.socket.remoteAddress ||
     "";
-  console.log({ userIPAddress: ip });
-  console.log({ Query: req.query });
-  const {
-    sub1,
-    sub2,
-    sub3,
-    sub4,
-    sub5,
-    sub6,
-    sub7,
-    sub8,
-    installed,
-    advertiser_tracking_id,
-  } = req.query;
+  const requestURL = req.originalUrl; // This will include query parameters, if any
+  const { sub1, installed, advertiser_tracking_id } = req.query;
 
+  console.log({ userIPAddress: ip });
+  console.log({ requestURL });
+  console.log({ Query: req.query });
+
+  //============{state variables}====================================
+
+  let updatedLink = backend + requestURL;
+  let facebookLink = "";
+
+  //============{data iterations}====================================
   // Check if user email already exists
   const userExists = await User.findOne({ ipAddress: ip });
   const userTrackingIdExists = await User.findOne({
     advertiserTrackingId: advertiser_tracking_id,
   });
-  let facebookLink = "";
-  let newLink = "";
 
   if (!userExists && sub1) {
     // sub1 must be constant
 
     console.log("new user");
-
-    // New user
-    const updatedLink = `${backend}/?sub1=${sub1}&sub2=${sub2}&sub3=${sub3}&sub4=${sub4}&sub5=${sub5}&sub6=${sub6}&sub7=${sub7}&sub8=${sub8}`;
 
     const newUser = await User.create({
       ipAddress: ip,
@@ -95,12 +96,6 @@ app.get("/", async (req, res) => {
     console.log("user exists");
     facebookLink = userExists.userLink;
   }
-
-  // Redirect to app store if not installed
-  // if (installed !== "true") {
-  //   const appStoreLink = process.env.APP_STORE_LINK;
-  //   return res.redirect(appStoreLink);
-  // }
 
   console.log("app redirect successful");
 
@@ -235,6 +230,9 @@ app.get("/all_users", async (req, res) => {
     res.status(200).json(allUsers);
   }
 });
+
+//fbp and token
+//token
 
 // Error Middleware
 app.use(errorHandler);

@@ -46,6 +46,7 @@ const app_access_token = process.env.FACEBOOK_ACCESS_TOKEN;
 // const link3 =
 //   "https://www.dmtgames.pro/?sub1=NPR&sub2=291735090&sub3=NPR&sub4=vidos1&sub5={{ad.id}}&sub6=method1&fbp=714981180129689&token=EAAEcIRgo4MIBO7Gb3oGV6rbcjXOiZBhplvcAeWAXc6Xfn0xZAv02XEts1RyAcV7zEbY6mbYBqPgjUKY6PWhRrRf0YWHkzBToto5Q6rSJ4RqDWg8u84mKzhC28AeZBv1EXYGfCj1NZBTNPTH7ejqdUtCZA7ZCIgvZAZBuGqEpySTJOCgz6aIQawJfcsQBRGiuTiPh7AZDZD";
 
+// add advertiser_tracking_id to installed API call in unity app
 app.get("/", async (req, res) => {
   //======{request objects}====================================
   const ip =
@@ -73,7 +74,9 @@ app.get("/", async (req, res) => {
     advertiserTrackingId: advertiser_tracking_id,
   });
 
-  if (!userExists) {
+  if (!userExists && sub1) {
+    // sub1 must be constant
+
     console.log("new user");
 
     const newUser = await User.create({
@@ -85,25 +88,35 @@ app.get("/", async (req, res) => {
       facebookLink = updatedLink;
       console.log({ "New user created": newUser });
       const appStoreLink = process.env.APP_STORE_LINK;
-      console.log("app install in progress");
       return res.redirect(appStoreLink);
     }
   }
 
-  if (userTrackingIdExists) {
+  if (
+    userExists &&
+    advertiser_tracking_id &&
+    !userExists.advertiserTrackingId
+  ) {
+    userExists.advertiserTrackingId =
+      advertiser_tracking_id || userExists.advertiserTrackingId;
+
+    const updatedUser = await userExists.save();
+
+    if (updatedUser) {
+      console.log({ "User updated": updatedUser });
+    }
+  } else if (userTrackingIdExists) {
     console.log("user exists");
     facebookLink = userTrackingIdExists.userLink;
-    console.log("app launch successful");
-    console.log({ marketerLink: facebookLink });
-
-    res.json(facebookLink);
   } else {
     console.log("user exists");
     facebookLink = userExists.userLink;
-    console.log("app launch successful");
-    console.log({ marketerLink: facebookLink });
-    res.json(facebookLink);
   }
+  console.log("sending link");
+  newLink = facebookLink;
+
+  console.log({ redirectLink: newLink });
+  res.json(newLink);
 });
 
 //set marketers link inside app
@@ -125,79 +138,6 @@ app.get("/.well-known/apple-app-site-association", (req, res) => {
 //step3: on app launch
 // call this on initializing app to fetch back the original link that is needed for tracking user
 // because in the associated domain, we may not have th full path, but only the root domain https://www.dmtgames.pro
-
-// add advertiser_tracking_id to installed API call in unity app
-// app.get("/installed", async (req, res) => {
-//   const ip =
-//     req.headers["cf-connecting-ip"] ||
-//     req.headers["x-real-ip"] ||
-//     req.headers["x-forwarded-for"] ||
-//     req.socket.remoteAddress ||
-//     "";
-//   const { advertiser_tracking_id } = req.query;
-
-//   const userExists = await User.findOne({ ipAddress: ip });
-//   const userTrackingIdExists = await User.findOne({
-//     advertiserTrackingId: advertiser_tracking_id,
-//   });
-
-//   let newLink = "";
-
-//   // if only advertiser tracking id exists
-//   if (userTrackingIdExists) {
-//     console.log("only advertiser tracking id exists");
-//     const facebookLink = userTrackingIdExists.userLink;
-//     const installed = "true";
-//     newLink = facebookLink + `&installed=${installed}`;
-//   } else if (userExists) {
-//     console.log("only ip exists");
-//     const facebookLink = userExists.userLink;
-//     const installed = "true";
-//     newLink = facebookLink + `&installed=${installed}`;
-//   } else {
-//     console.log("user does not exist");
-//     newLink = backend; // take back to home link for redirect to app store
-//   }
-//   console.log({ redirectLink: newLink });
-//   // res.redirect(newLink);
-//   res.json(newLink);
-// });
-
-app.get("/installed", async (req, res) => {
-  const ip =
-    req.headers["cf-connecting-ip"] ||
-    req.headers["x-real-ip"] ||
-    req.headers["x-forwarded-for"] ||
-    req.socket.remoteAddress ||
-    "";
-  const { advertiser_tracking_id } = req.query;
-
-  const userExists = await User.findOne({ ipAddress: ip });
-  const userTrackingIdExists = await User.findOne({
-    advertiserTrackingId: advertiser_tracking_id,
-  });
-
-  let newLink = "";
-
-  // if only advertiser tracking id exists
-  if (userTrackingIdExists) {
-    console.log("only advertiser tracking id exists");
-    const facebookLink = userTrackingIdExists.userLink;
-    const installed = "true";
-    newLink = facebookLink + `&installed=${installed}`;
-  } else if (!userTrackingIdExists && userExists) {
-    console.log("only ip exists");
-    const facebookLink = userExists.userLink;
-    const installed = "true";
-    newLink = facebookLink + `&installed=${installed}`;
-  } else {
-    console.log("user does not exist");
-    newLink = backend; // take back to home link for redirect to app store
-  }
-  console.log({ installedLink: newLink });
-  // res.redirect(newLink);
-  res.json(newLink);
-});
 
 app.get("/track_app_installs", async (req, res) => {
   const ip =

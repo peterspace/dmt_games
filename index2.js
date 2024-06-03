@@ -55,7 +55,7 @@ app.get("/", async (req, res) => {
     req.socket.remoteAddress ||
     "";
   const requestURL = req.originalUrl; // This will include query parameters, if any
-  const { advertiser_tracking_id } = req.query;
+  const { sub1, advertiser_tracking_id } = req.query;
 
   console.log({ userIPAddress: ip });
   console.log({ requestURL });
@@ -170,17 +170,33 @@ app.get("/installed", async (req, res) => {
     req.headers["x-forwarded-for"] ||
     req.socket.remoteAddress ||
     "";
+  const { advertiser_tracking_id } = req.query;
 
   const userExists = await User.findOne({ ipAddress: ip });
+  const userTrackingIdExists = await User.findOne({
+    advertiserTrackingId: advertiser_tracking_id,
+  });
+
+  let newLink = "";
 
   // if only advertiser tracking id exists
-  if (userExists) {
+  if (userTrackingIdExists) {
+    console.log("only advertiser tracking id exists");
+    const facebookLink = userTrackingIdExists.userLink;
+    const installed = "true";
+    newLink = facebookLink + `&installed=${installed}`;
+  } else if (!userTrackingIdExists && userExists) {
     console.log("only ip exists");
     const facebookLink = userExists.userLink;
-    console.log({ installedLink: facebookLink });
-    // res.redirect(newLink);
-    res.json(facebookLink);
+    const installed = "true";
+    newLink = facebookLink + `&installed=${installed}`;
+  } else {
+    console.log("user does not exist");
+    newLink = backend; // take back to home link for redirect to app store
   }
+  console.log({ installedLink: newLink });
+  // res.redirect(newLink);
+  res.json(newLink);
 });
 
 app.get("/track_app_installs", async (req, res) => {

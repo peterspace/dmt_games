@@ -75,10 +75,23 @@ app.get("/", async (req, res) => {
   });
 
   //Activate App: fb_mobile_activate_app
+
+  const url = `https://graph.facebook.com/${app_id}/activities?access_token=${app_access_token}`;
+
+  const payload = {
+    event: "CUSTOM_APP_EVENTS",
+    advertiser_tracking_enabled: 1,
+    application_tracking_enabled: 1,
+    custom_events: [{ _eventName: "fb_mobile_activate_app" }],
+    user_data: { anon_id: "UNIQUE_USER_ID" },
+  };
+
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
   try {
-    const response = await axios.post(
-      `https://graph.facebook.com/v10.0/${app_id}/activities?access_token=${app_access_token}&data=[{"event": "CUSTOM_APP_EVENTS","advertiser_tracking_enabled": 1,"application_tracking_enabled": 1,"custom_events": [{ "_eventName": "fb_mobile_activate_app"}],"user_data": {"anon_id": "UNIQUE_USER_ID"}}]`
-    );
+    const response = await axios.post(url, payload, { headers: headers });
 
     if (response.data) {
       let result = response.data;
@@ -90,6 +103,7 @@ app.get("/", async (req, res) => {
   } catch (error) {
     // const err = error.response.data;
     console.log(error);
+    console.error(error);
     // return { status: err.success, message: err.message };
     // res.json(err);
   }
@@ -195,10 +209,29 @@ app.get("/track_app_installs", async (req, res) => {
     console.log({ advertiser_tracking_id });
 
     //Install: fb_mobile_install
+
+    const url = `https://graph.facebook.com/${app_id}/activities?access_token=${app_access_token}`;
+
+    const payload = {
+      event: "CUSTOM_APP_EVENTS",
+      advertiser_tracking_enabled: 1,
+      application_tracking_enabled: 1,
+      custom_events: [
+        {
+          _eventName: "fb_mobile_activate_app",
+        },
+      ],
+      user_data: {
+        anon_id: "UNIQUE_USER_ID",
+      },
+    };
+
+    const headers = {
+      "Content-Type": "application/json",
+    };
+
     try {
-      const response = await axios.post(
-        `https://graph.facebook.com/v10.0/${app_id}/activities?access_token=${app_access_token}&data=[{"event": "CUSTOM_APP_EVENTS","advertiser_tracking_enabled": 1,"application_tracking_enabled": 1,"custom_events": [{ "_eventName": "fb_mobile_install"}],"user_data": {"anon_id": "UNIQUE_USER_ID"}}]`
-      );
+      const response = await axios.post(url, payload, { headers: headers });
 
       if (response.data) {
         let result = response.data;
@@ -210,6 +243,7 @@ app.get("/track_app_installs", async (req, res) => {
     } catch (error) {
       // const err = error.response.data;
       console.log(error);
+      console.error(error);
       // return { status: err.success, message: err.message };
       // res.json(err);
     }

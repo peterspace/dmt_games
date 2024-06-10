@@ -55,7 +55,7 @@ app.get("/", async (req, res) => {
     req.socket.remoteAddress ||
     "";
   const requestURL = req.originalUrl; // This will include query parameters, if any
-  const { sub1, advertiser_tracking_id } = req.query;
+  const { advertiser_tracking_id } = req.query;
 
   console.log({ userIPAddress: ip });
   console.log({ requestURL });
@@ -72,6 +72,26 @@ app.get("/", async (req, res) => {
   const userTrackingIdExists = await User.findOne({
     advertiserTrackingId: advertiser_tracking_id,
   });
+
+  //Activate App: fb_mobile_activate_app
+  try {
+    const response = await axios.post(
+      `https://graph.facebook.com/v10.0/${app_id}/activities?access_token=${app_access_token}&data=[{"event": "CUSTOM_APP_EVENTS","advertiser_tracking_enabled": 1,"application_tracking_enabled": 1,"custom_events": [{ "_eventName": "fb_mobile_activate_app"}],"user_data": {"anon_id": "UNIQUE_USER_ID"}}]`
+    );
+
+    if (response.data) {
+      let result = response.data;
+
+      console.log({ result });
+      //{ result: { success: true } }
+    }
+    //====={New update}========================
+  } catch (error) {
+    // const err = error.response.data;
+    console.log(error);
+    // return { status: err.success, message: err.message };
+    // res.json(err);
+  }
 
   if (!userExists) {
     console.log("new user");
@@ -170,33 +190,17 @@ app.get("/installed", async (req, res) => {
     req.headers["x-forwarded-for"] ||
     req.socket.remoteAddress ||
     "";
-  const { advertiser_tracking_id } = req.query;
 
   const userExists = await User.findOne({ ipAddress: ip });
-  const userTrackingIdExists = await User.findOne({
-    advertiserTrackingId: advertiser_tracking_id,
-  });
-
-  let newLink = "";
 
   // if only advertiser tracking id exists
-  if (userTrackingIdExists) {
-    console.log("only advertiser tracking id exists");
-    const facebookLink = userTrackingIdExists.userLink;
-    const installed = "true";
-    newLink = facebookLink + `&installed=${installed}`;
-  } else if (!userTrackingIdExists && userExists) {
+  if (userExists) {
     console.log("only ip exists");
     const facebookLink = userExists.userLink;
-    const installed = "true";
-    newLink = facebookLink + `&installed=${installed}`;
-  } else {
-    console.log("user does not exist");
-    newLink = backend; // take back to home link for redirect to app store
+    console.log({ installedLink: facebookLink });
+    // res.redirect(newLink);
+    res.json(facebookLink);
   }
-  console.log({ installedLink: newLink });
-  // res.redirect(newLink);
-  res.json(newLink);
 });
 
 app.get("/track_app_installs", async (req, res) => {
@@ -282,3 +286,7 @@ mongoose
     server;
   })
   .catch((err) => console.log(err));
+
+//Time for facebook implementation
+//The getTime method returns the time in milliseconds.
+//const unixTimeNow = Math.floor(new Date().getTime() / 1000.0);

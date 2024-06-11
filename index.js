@@ -76,37 +76,37 @@ app.get("/", async (req, res) => {
 
   //Activate App: fb_mobile_activate_app
 
-  const url = `https://graph.facebook.com/${app_id}/activities?access_token=${app_access_token}`;
+  // const url = `https://graph.facebook.com/${app_id}/activities?access_token=${app_access_token}`;
 
-  const payload = {
-    event: "CUSTOM_APP_EVENTS",
-    advertiser_tracking_enabled: 1,
-    application_tracking_enabled: 1,
-    custom_events: [{ _eventName: "fb_mobile_activate_app" }],
-    user_data: { anon_id: "UNIQUE_USER_ID" },
-  };
+  // const payload = {
+  //   event: "CUSTOM_APP_EVENTS",
+  //   advertiser_tracking_enabled: 1,
+  //   application_tracking_enabled: 1,
+  //   custom_events: [{ _eventName: "fb_mobile_activate_app" }],
+  //   user_data: { anon_id: "UNIQUE_USER_ID" },
+  // };
 
-  const headers = {
-    "Content-Type": "application/json",
-  };
+  // const headers = {
+  //   "Content-Type": "application/json",
+  // };
 
-  try {
-    const response = await axios.post(url, payload, { headers: headers });
+  // try {
+  //   const response = await axios.post(url, payload, { headers: headers });
 
-    if (response.data) {
-      let result = response.data;
+  //   if (response.data) {
+  //     let result = response.data;
 
-      console.log({ result });
-      //{ result: { success: true } }
-    }
-    //====={New update}========================
-  } catch (error) {
-    // const err = error.response.data;
-    console.log(error);
-    console.error(error);
-    // return { status: err.success, message: err.message };
-    // res.json(err);
-  }
+  //     console.log({ result });
+  //     //{ result: { success: true } }
+  //   }
+  //   //====={New update}========================
+  // } catch (error) {
+  //   // const err = error.response.data;
+  //   console.log(error);
+  //   console.error(error);
+  //   // return { status: err.success, message: err.message };
+  //   // res.json(err);
+  // }
 
   if (!userExists && sub1) {
     // sub1 must be constant
@@ -138,19 +138,29 @@ app.get("/", async (req, res) => {
 
     if (updatedUser) {
       console.log({ "User updated": updatedUser });
+      console.log("sending link");
+
+      facebookLink = updatedUser.userLink;
+      newLink = facebookLink;
+
+      console.log({ redirectLink: newLink });
+      res.json(newLink);
     }
   } else if (userTrackingIdExists) {
     console.log("user exists");
     facebookLink = userTrackingIdExists.userLink;
+    console.log("sending link");
+    newLink = facebookLink;
+
+    console.log({ redirectLink: newLink });
+    res.json(newLink);
   } else {
     console.log("user exists");
-    facebookLink = userExists.userLink;
+    // facebookLink = userExists.userLink;
+    console.log("New user organic user");
+    const appStoreLink = process.env.APP_STORE_LINK;
+    return res.redirect(appStoreLink);
   }
-  console.log("sending link");
-  newLink = facebookLink;
-
-  console.log({ redirectLink: newLink });
-  res.json(newLink);
 });
 
 //set marketers link inside app
